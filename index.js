@@ -17,11 +17,19 @@ async function run() {
     try {
         await client.connect();
         const equipmentCollection = client.db('gymWarehouse').collection('equipment');
+        //get all data
         app.get('/equipment', async (req, res) => {
             const query = {};
             const cursor = equipmentCollection.find(query);
             const equipments = await cursor.toArray();
             res.send(equipments);
+        });
+
+        //post a data
+        app.post('/equipment', async (req, res) => {
+            const newEquipment = req.body;
+            const result = await equipmentCollection.insertOne(newEquipment);
+            res.send(result);
         });
 
         //get detail
@@ -45,6 +53,13 @@ async function run() {
             }
             const result = await equipmentCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+        });
+        //Delete a equipment
+        app.delete('/equipment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await equipmentCollection.deleteOne(query)
+            res.send(result)
         })
     }
     finally {
