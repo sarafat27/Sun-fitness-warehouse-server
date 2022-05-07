@@ -17,6 +17,7 @@ async function run() {
     try {
         await client.connect();
         const equipmentCollection = client.db('gymWarehouse').collection('equipment');
+        const addedItemsCollection = client.db('gymWarehouse').collection('addedItems');
         //get all data
         app.get('/equipment', async (req, res) => {
             const query = {};
@@ -25,12 +26,30 @@ async function run() {
             res.send(equipments);
         });
 
-        //post a data
+
+        //post a data to all equipments
         app.post('/equipment', async (req, res) => {
             const newEquipment = req.body;
             const result = await equipmentCollection.insertOne(newEquipment);
             res.send(result);
         });
+
+        //post a data to added Items
+        app.post('/addedItems', async (req, res) => {
+            const newItem = req.body;
+            const result = await addedItemsCollection.insertOne(newItem);
+            res.send(result);
+        })
+
+        //Get data from addedItems
+        app.get('/addedItems', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const cursor = addedItemsCollection.find(query);
+            const addedItems = await cursor.toArray();
+            res.send(addedItems)
+        })
+
 
         //get detail
         app.get('/equipment/:id', async (req, res) => {
@@ -59,6 +78,14 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await equipmentCollection.deleteOne(query)
+            res.send(result)
+        });
+
+        //Delete an item from added items
+        app.delete('/addedItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await addedItemsCollection.deleteOne(query)
             res.send(result)
         })
     }
